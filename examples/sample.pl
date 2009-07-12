@@ -33,8 +33,7 @@ sub main {
 	# If there already is an instance running, this will return TRUE; there's no
 	# race condition because the check is already performed at construction time.
 	if ($app->is_running) {
-		my $data = [$text, '/etc/passwd'];
-		my $response = $app->send_message($COMMAND_WRITE, data => '/etc/passwd');
+		my $response = $app->send_message_by_name(write => data => $text);
 		return 0;
 	}
 

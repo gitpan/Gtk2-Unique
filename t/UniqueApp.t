@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Gtk2::TestHelper tests => 10;
+use Gtk2::TestHelper tests => 16;
 
 use Gtk2::Unique;
 
@@ -79,7 +79,7 @@ sub generic_test {
 	
 	if (! $app->is_running()) {
 		SKIP: {
-			skip "No app is running; execute perl -Mblib t/unit-tests.pl", 3;
+			skip "No app is running; execute perl -Mblib t/unit-tests.pl", 6;
 		}
 		return;
 	}
@@ -88,14 +88,28 @@ sub generic_test {
 	$response = $app->send_message($COMMAND_FOO, text => "hello");
 	is($response, 'ok', "send_message(text)");
 
+	$response = $app->send_message_by_name(foo => text => "hello");
+	is($response, 'ok', "send_message_by_name(text)");
+
+
 	$response = $app->send_message($COMMAND_BAR, filename => __FILE__);
 	is($response, 'invalid', "send_message(filename)");
+
+	$response = $app->send_message_by_name(bar => filename => __FILE__);
+	is($response, 'invalid', "send_message_by_name(filename)");
+
 
 	$response = $app->send_message($COMMAND_FOO, uris => [
 		'http://live.gnome.org/LibUnique',
 		'http://gtk2-perl.sourceforge.net/',
 	]);
 	is($response, 'ok', "send_message(uris)");
+
+	$response = $app->send_message_by_name(foo =>, uris => [
+		'http://live.gnome.org/LibUnique',
+		'http://gtk2-perl.sourceforge.net/',
+	]);
+	is($response, 'ok', "send_message_by_name(uris)");
 
 	
 	my $window = Gtk2::Window->new();

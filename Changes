@@ -1,6 +1,9 @@
 Revision history for Gtk2::Unique
 
 
+0.02 Sun Jul 12 16:28:57 CEST 2009
+	More perlish API with send_message_by_name()
+
+
 0.01 Thu Apr  2 15:44:36 CEST 2009
 	First version, released on an unsuspecting world.
-

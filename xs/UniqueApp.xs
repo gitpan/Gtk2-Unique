@@ -7,7 +7,7 @@ MODULE = Gtk2::UniqueApp  PACKAGE = Gtk2::UniqueApp  PREFIX = unique_app_
 UniqueApp_noinc*
 unique_app_new (class, const gchar *name, const gchar_ornull *startup_id, ...)
 	ALIAS:
-		Gtk2::UniqueApp::new_with_commands = 1
+		new_with_commands = 1
 	
 	PREINIT:
 		UniqueApp *app = NULL;
@@ -70,19 +70,51 @@ gboolean
 unique_app_is_running (UniqueApp *app)
 
 
+#
 # $app->send_message($ID) -> unique_app_send_message(app, command_id, NULL);
 # $app->send_message($ID, text => $text) -> set_text() unique_app_send_message(app, command_id, message);
 # $app->send_message($ID, data => $data) -> set() unique_app_send_message(app, command_id, message);
 # $app->send_message($ID, uris => @uri) -> set_uris() unique_app_send_message(app, command_id, message);
 #
+# $app->send_message_by_name('command') -> unique_app_send_message(app, command_id, NULL);
+# $app->send_message_by_name('command', text => $text) -> set_text() unique_app_send_message(app, command_id, message);
+# $app->send_message_by_name('command', data => $data) -> set() unique_app_send_message(app, command_id, message);
+# $app->send_message_by_name('command', uris => @uri) -> set_uris() unique_app_send_message(app, command_id, message);
+#
 #
 UniqueResponse
-unique_app_send_message (UniqueApp *app, gint command_id, ...)
+unique_app_send_message (UniqueApp *app, SV *command, ...)
+	ALIAS:
+		send_message_by_name = 1
+
 	PREINIT:
 		UniqueMessageData *message = NULL;
 		SV **s = NULL;
+		gint command_id = 0;
 
 	CODE:
+
+		switch (ix) {
+			case 0:
+				{
+					command_id = (gint) SvIV(command);
+				}
+			break;
+
+			case 1:
+				{
+					gchar *command_name = SvGChar(command);
+					command_id = unique_command_from_string(app, command_name);
+					if (command_id == 0) {
+							croak("Command '%s' isn't registered with the application", command_name);
+					}
+				}
+			break;
+
+			default:
+				croak("Method called with the wrong name");
+		}
+
 		if (items == 4) {
 			SV *sv_data;
 			gchar *type;
