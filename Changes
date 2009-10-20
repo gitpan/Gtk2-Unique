@@ -1,8 +1,13 @@
 Revision history for Gtk2::Unique
 
+0.03 Tue Oct 20 20:21:27 CEST 2009
+	Add the version check macros to the bindings.
+	Fix the unit tests (now using the bacon backend).
+	Documentation updates.
+
 
 0.02 Sun Jul 12 16:28:57 CEST 2009
-	More perlish API with send_message_by_name()
+	More perlish API with send_message_by_name().
 
 
 0.01 Thu Apr  2 15:44:36 CEST 2009

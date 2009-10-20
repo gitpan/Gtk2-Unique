@@ -3,13 +3,24 @@
 use strict;
 use warnings;
 
-use Gtk2::TestHelper tests => 16;
+use Gtk2::TestHelper tests => 20;
 
 use Gtk2::Unique;
 
 my $COMMAND_FOO = 1;
 my $COMMAND_BAR = 2;
 my $APP_NAME = 'org.example.UnitTets';
+
+
+# The D-Bus backend doesn't seem to realize that an application is no longer
+# running when created from the same Perl script. The second call to
+# Gtk2::UniqueApp->new() will think that the application is already running when
+# it isn't. This happens even if the original $app variable exists no longer.
+#
+# Besides the bacon backend is the only one guaranteed to exist.
+#
+local $ENV{UNIQUE_BACKEND} = 'bacon';
+
 
 exit tests();
 
@@ -79,11 +90,17 @@ sub generic_test {
 	
 	if (! $app->is_running()) {
 		SKIP: {
-			skip "No app is running; execute perl -Mblib t/unit-tests.pl", 6;
+			skip "No app is running; execute perl -Mblib t/unit-tests.pl", 8;
 		}
 		return;
 	}
 	my $response;
+
+	$response = $app->send_message($COMMAND_FOO, data => "data in here");
+	is($response, 'ok', "send_message(data)");
+
+	$response = $app->send_message_by_name(foo => data => "data in here");
+	is($response, 'ok', "send_message_by_name(data)");
 
 	$response = $app->send_message($COMMAND_FOO, text => "hello");
 	is($response, 'ok', "send_message(text)");

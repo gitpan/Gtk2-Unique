@@ -12,6 +12,11 @@ my $COMMAND_FOO = 1;
 my $COMMAND_BAR = 2;
 
 
+# Use the bacon backend as it is the only that really works with unit tests.
+# See t/UniqueApp.t for more details.
+local $ENV{UNIQUE_BACKEND} = 'bacon';
+
+
 exit main();
 
 
