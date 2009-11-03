@@ -1,5 +1,11 @@
 Revision history for Gtk2::Unique
 
+0.04 Tue Nov  3 22:27:54 CET 2009
+	The signal Gtk2::UniqueApp::message-received now receives command name
+	instaed of the command id.
+	The macro UNIQUE_CHECK_VERSION will be fixed in 1.1.0.
+
+
 0.03 Tue Oct 20 20:21:27 CEST 2009
 	Add the version check macros to the bindings.
 	Fix the unit tests (now using the bacon backend).

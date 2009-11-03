@@ -61,7 +61,7 @@ CHECK_VERSION (class, guint major, guint minor, guint micro)
  *
  * For now we define our own check version and use that one instead.
  */
-#if ! _FIXED_UNIQUE_CHECK_VERSION(1, 0, 10)
+#if ! _FIXED_UNIQUE_CHECK_VERSION(1, 1, 0)
 		RETVAL = _FIXED_UNIQUE_CHECK_VERSION(major, minor, micro);
 #else
 		RETVAL = UNIQUE_CHECK_VERSION(major, minor, micro);

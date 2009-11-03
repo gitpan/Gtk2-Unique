@@ -1,7 +1,68 @@
 #include "unique-perl.h"
+#include <gperl_marshal.h>
+
+static void
+perl_unique_app_marshall_message_received (
+	GClosure *closure,
+	GValue *return_value,
+	guint n_param_values,
+	const GValue *param_values,
+	gpointer invocant_hint,
+	gpointer marshal_data)
+{
+	UniqueApp *app;
+	gint command;
+	const gchar *command_name;
+
+	dGPERL_CLOSURE_MARSHAL_ARGS;
+	PERL_UNUSED_VAR (return_value);
+	PERL_UNUSED_VAR (n_param_values);
+	PERL_UNUSED_VAR (invocant_hint);
+
+	GPERL_CLOSURE_MARSHAL_INIT (closure, marshal_data);
+
+	ENTER;
+	SAVETMPS;
+	PUSHMARK (SP);
+
+	GPERL_CLOSURE_MARSHAL_PUSH_INSTANCE (param_values);
+
+	app = (UniqueApp *) g_value_get_object (param_values + 0);
+	command = g_value_get_int (param_values + 1);
+	command_name = (const gchar *) unique_command_to_string (app, command);
+
+	XPUSHs (sv_2mortal (newSVpv (command_name, 0)));
+	XPUSHs (sv_2mortal (gperl_sv_from_value (param_values + 2)));
+	XPUSHs (sv_2mortal (gperl_sv_from_value (param_values + 3)));
+
+	GPERL_CLOSURE_MARSHAL_PUSH_DATA;
+
+	PUTBACK;
+
+	GPERL_CLOSURE_MARSHAL_CALL (G_SCALAR);
+
+	SPAGAIN;
+
+	if (count != 1) {
+		croak ("message-received handlers need to return a single value");
+	}
+
+	g_value_set_enum (return_value, SvUniqueResponse (POPs));
+
+	FREETMPS;
+	LEAVE;
+
+}
 
 
 MODULE = Gtk2::UniqueApp  PACKAGE = Gtk2::UniqueApp  PREFIX = unique_app_
+
+BOOT:
+	gperl_signal_set_marshaller_for (
+		UNIQUE_TYPE_APP,
+		"message-received",
+		perl_unique_app_marshall_message_received
+	);
 
 =for object Gtk2::UniqueApp - Base class for singleton applications
 =cut
@@ -25,12 +86,12 @@ MODULE = Gtk2::UniqueApp  PACKAGE = Gtk2::UniqueApp  PREFIX = unique_app_
 		$window->add($label);
 		$window->set_size_request(480, 120);
 		$window->show_all();
-		
+
 		$window->signal_connect(delete_event => sub {
 			Gtk2->main_quit();
 			return TRUE;
 		});
-		
+
 		# Watch the main window and register a handler that will be called each time
 		# that there's a new message.
 		$app->watch_window($window);
@@ -99,10 +160,10 @@ UniqueApp_noinc*
 unique_app_new (class, const gchar *name, const gchar_ornull *startup_id, ...)
 	ALIAS:
 		new_with_commands = 1
-	
+
 	PREINIT:
 		UniqueApp *app = NULL;
-		
+
 	CODE:
 		PERL_UNUSED_VAR(ix);
 
@@ -281,12 +342,12 @@ unique_app_send_message_by_name (UniqueApp *app, SV *command, ...)
 			message = unique_message_data_new();
 			type = SvGChar(ST(2));
 			sv_data = ST(3);
-			
+
 			if (g_strcmp0(type, "data") == 0) {
 				SV *sv;
 				STRLEN length;
 				char *data;
-				
+
 				length = sv_len(sv_data);
 				data = SvPV(sv_data, length);
 				unique_message_data_set(message, data, length);
@@ -294,7 +355,7 @@ unique_app_send_message_by_name (UniqueApp *app, SV *command, ...)
 			else if (g_strcmp0(type, "text") == 0) {
 				STRLEN length;
 				char *text;
-				
+
 				length = sv_len(sv_data);
 				text = SvGChar(sv_data);
 				unique_message_data_set_text(message, text, length);
@@ -302,7 +363,7 @@ unique_app_send_message_by_name (UniqueApp *app, SV *command, ...)
 			else if (g_strcmp0(type, "filename") == 0) {
 				SV *sv;
 				char *filename;
-				
+
 				filename = SvGChar(sv_data);
 				unique_message_data_set_filename(message, filename);
 			}
@@ -320,7 +381,7 @@ unique_app_send_message_by_name (UniqueApp *app, SV *command, ...)
 				/* Convert the Perl array into a C array of strings */
 				av = (AV*) SvRV(sv_data);
 				length = av_len(av) + 2; /* last index + extra NULL padding */
-				
+
 				uris = g_new0(gchar *, length);
 				for (i = 0; i < length - 1; ++i) {
 					SV **uri_sv = av_fetch(av, i, FALSE);
@@ -346,9 +407,9 @@ unique_app_send_message_by_name (UniqueApp *app, SV *command, ...)
 				" or $app->send_message($id)"
 			);
 		}
-		
+
 		RETVAL = unique_app_send_message(app, command_id, message);
-		
+
 		if (message) {
 			unique_message_data_free(message);
 		}
