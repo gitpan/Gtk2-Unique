@@ -1,7 +1,12 @@
 Revision history for Gtk2::Unique
 
-0.04 Tue Nov  3 22:27:54 CET 2009
-	The signal Gtk2::UniqueApp::message-received now receives command name
+
+0.05 Wed May  5 19:48:14 CEST 2010
+	Minor XS update: the length of a string was computed twice.
+
+
+0.04 Tue Nov  3 22:27:54 CEST 2009
+	The signal Gtk2::UniqueApp::message-received now receives the command name
 	instaed of the command id.
 	The macro UNIQUE_CHECK_VERSION will be fixed in 1.1.0.
 

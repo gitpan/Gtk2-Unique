@@ -348,7 +348,6 @@ unique_app_send_message_by_name (UniqueApp *app, SV *command, ...)
 				STRLEN length;
 				char *data;
 
-				length = sv_len(sv_data);
 				data = SvPV(sv_data, length);
 				unique_message_data_set(message, data, length);
 			}
